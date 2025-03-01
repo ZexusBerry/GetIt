@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Code Obfuscator</title>
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #00ffcc;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        textarea {
+            width: 80%;
+            height: 200px;
+            background: #222;
+            color: #0f0;
+            border: 1px solid #00ffcc;
+            padding: 10px;
+        }
+        select, button {
+            background: #222;
+            color: #00ffcc;
+            border: 1px solid #00ffcc;
+            padding: 10px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced Code Obfuscator</h1>
+    <select id="language">
+        <option value="csharp">C#</option>
+        <option value="lua">Lua</option>
+    </select>
+    <br>
+    <textarea id="code" placeholder="Paste your code here..."></textarea>
+    <br>
+    <button onclick="obfuscateCode()">Obfuscate</button>
+    <h2>Obfuscated Code:</h2>
+    <textarea id="output" readonly></textarea>
+    <br>
+    <button onclick="copyCode()">Copy to Clipboard</button>
+
+    <script>
+        function randomString(length) {
+            let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            let result = "";
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function obfuscateCode() {
+            let language = document.getElementById("language").value;
+            let code = document.getElementById("code").value;
+            let obfuscated = "";
+            
+            if (language === "csharp") {
+                let varNames = {};
+                obfuscated = code.replace(/\b(int|string|float|double|var|bool)\s+([a-zA-Z_][a-zA-Z0-9_]*)\b/g, (match, type, name) => {
+                    let obfName = randomString(10);
+                    varNames[name] = obfName;
+                    return type + " " + obfName;
+                }).replace(/[a-zA-Z_][a-zA-Z0-9_]*/g, match => varNames[match] || match)
+                  .split("").reverse().join("")
+                  .replace(/./g, char => String.fromCharCode(char.charCodeAt(0) + 3));
+            } else if (language === "lua") {
+                let encoded = btoa(unescape(encodeURIComponent(code)));
+                let key = randomString(5);
+                obfuscated = `local ${key}='${encoded}'; local function decode(str) local r='' for i=1,#str do r=r..string.char(string.byte(str,i)-3) end return r end; loadstring(decode(${key}))()`;
+            }
+            
+            document.getElementById("output").value = obfuscated;
+        }
+        
+        function copyCode() {
+            let output = document.getElementById("output");
+            output.select();
+            document.execCommand("copy");
+            alert("Copied to clipboard!");
+        }
+    </script>
+</body>
+</html>
